@@ -3,13 +3,12 @@ name: Update Election Data
 on:
 workflow_dispatch:
 schedule:
-- cron: '*/1 * * * *'
+- cron: '*/5 * * * *'
 
 jobs:
 update:
 runs-on: ubuntu-latest
 
-```
 steps:
   - uses: actions/checkout@v4
 
