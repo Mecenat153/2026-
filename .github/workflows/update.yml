@@ -27,4 +27,3 @@ steps:
 
   - name: Push
     run: git push
-```
