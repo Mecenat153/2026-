@@ -1,28 +1,38 @@
 name: Update Election Data
 
 on:
-workflow_dispatch:
-schedule:
-- cron: '*/5 * * * *'
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+# 1. Added permissions for GITHUB_TOKEN (권한 추가)
+permissions:
+  contents: write
 
 jobs:
-update:
-runs-on: ubuntu-latest
+  update:
+    runs-on: ubuntu-latest
 
-steps:
-  - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history for stable git operations
 
-  - name: Fetch election data
-    run: |
-      mkdir -p data
-      curl -L "https://info.nec.go.kr/m/electioninfo/electionInfo_report.json" -o data/data.json
+      - name: Fetch election data
+        run: |
+          mkdir -p data
+          # 2. Added User-Agent header to avoid being blocked (User-Agent 추가)
+          curl -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "https://info.nec.go.kr/m/electioninfo/electionInfo_report.json" -o data/data.json
 
-  - name: Commit changes
-    run: |
-      git config user.name github-actions
-      git config user.email github-actions@github.com
-      git add data/data.json
-      git diff --staged --quiet || git commit -m "update election data"
+      - name: Commit changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add data/data.json
+          git diff --staged --quiet || git commit -m "update election data"
 
-  - name: Push
-    run: git push
+      - name: Push
+        run: |
+          # 3. Pull before push to handle any concurrent jobs (푸시 전 풀 추가)
+          git pull --rebase origin main
+          git push
